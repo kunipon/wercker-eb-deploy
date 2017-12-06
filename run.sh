@@ -28,8 +28,13 @@ if [ ! -n "$WERCKER_EB_DEPLOY_S3_BUCKET" ]; then
   exit 1
 fi
 
-if [ ! -n "$WERCKER_EB_DEPLOY_S3_KEY" ]; then
-  error 'Please specify s3 key'
+if [ ! -n "$WERCKER_EB_DEPLOY_S3_CP_SRC" ]; then
+  error 'Please specify s3 source file'
+  exit 1
+fi
+
+if [ ! -n "$WERCKER_EB_DEPLOY_S3_CP_DST" ]; then
+  error 'Please specify s3 destination file'
   exit 1
 fi
 
@@ -54,14 +59,14 @@ export AWS_DEFAULT_REGION=$WERCKER_EB_DEPLOY_REGION
 # create description for app deployment
 export EB_DESCRIPTION=$WERCKER_EB_DEPLOY_ENV_NAME,$WERCKER_GIT_BRANCH
 
-aws s3 cp --acl private "$WERCKER_EB_DEPLOY_S3_KEY" "s3://$WERCKER_EB_DEPLOY_S3_BUCKET"
+aws s3 cp --acl private "$WERCKER_EB_DEPLOY_S3_CP_SRC" "s3://$WERCKER_EB_DEPLOY_S3_BUCKET$WERCKER_EB_DEPLOY_S3_BUCKET_PATH/$WERCKER_EB_DEPLOY_S3_CP_DST"
 
 aws elasticbeanstalk create-application-version \
     --region $WERCKER_EB_DEPLOY_REGION \
     --application-name $WERCKER_EB_DEPLOY_APP_NAME \
     --version-label $WERCKER_EB_DEPLOY_VERSION_LABEL \
     --description $EB_DESCRIPTION \
-    --source-bundle "{\"S3Bucket\":\"$WERCKER_EB_DEPLOY_S3_BUCKET\", \"S3Key\":\"$WERCKER_EB_DEPLOY_S3_KEY\"}"
+    --source-bundle "{\"S3Bucket\":\"$WERCKER_EB_DEPLOY_S3_BUCKET\", \"S3Key\":\"$WERCKER_EB_DEPLOY_S3_BUCKET_PATH/$WERCKER_EB_DEPLOY_S3_CP_DST\"}"
 
 aws elasticbeanstalk update-environment \
     --environment-name $WERCKER_EB_DEPLOY_ENV_NAME \

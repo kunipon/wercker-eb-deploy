@@ -25,6 +25,12 @@ properties:
   s3-bucket:
     type: string
     required: true
-  s3-key:
+  s3-bucket-path:
+    type: string
+    required: false
+  s3-cp-src:
+    type: string
+    required: true
+  s3-cp-dst:
     type: string
     required: true
